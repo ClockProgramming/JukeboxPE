@@ -1,0 +1,21 @@
+name: JukeBoxPE
+version: 0.1.0
+api: [2.0.0]
+author: GlitchPlayer
+description: Jukebox from bukkit plugin~
+main: JukeboxPE\Main
+
+commands:
+ music:
+  permission: JukeboxPE.music
+  description: JukeboxPE's main command
+  usage: /music <Next>
+
+permissions:
+ JukeboxPE:
+  default: op
+  description: JukeboxPE Commands
+  children:
+     JukeboxPE.music:
+      default: op
+      description: JukeboxPE Commands
