@@ -2,7 +2,8 @@
 Jukebox in MCPE!
 
 ### Currently on beta state! Contributions are allowed!
-
+[![BuildStatus](https://travis-ci.org/GlitchPlayer/JukeboxPE.svg?branch=master)](
+https://travis-ci.org/GlitchPlayer/JukeboxPE)
 ### JukeboxPE ported from bukkit plugin "Jukebox"
 
     License
