@@ -23,7 +23,7 @@ class UpdaterTask extends AsyncTask {
   }
 
   public function onRun(){
-    $nversion = Utils::getURL("https://raw.githubusercontent.com/ImagicalGamer/SurvivalGames/master/resources/version");
+    $nversion = Utils::getURL("https://raw.githubusercontent.com/GlitchPlayer/JukeboxPE/master/resources/version");
     if($nversion > $this->version){
       $this->has_update = true;
     }
