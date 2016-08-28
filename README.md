@@ -42,4 +42,7 @@ https://travis-ci.org/GlitchPlayer/JukeboxPE)
     
     Submitting bugs on the ImagicalMine reviews won't be prioritized.
 
- 
+### Credits
+
+@zzm317 for the original work!
+@ImagicalGamer for the AutoUpdater Task!
