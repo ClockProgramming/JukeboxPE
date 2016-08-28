@@ -32,6 +32,7 @@ use pocketmine\utils\BinaryStream;
 use pocketmine\utils\Binary;
 
 use JukeboxPE\JukeboxAPI;
+use JukeboxPE\Updater\UpdateTask;
 
 class Main extends PluginBase implements Listener {
     public $song;
@@ -40,6 +41,7 @@ class Main extends PluginBase implements Listener {
 
     public function onEnable() {
         $this->getLogger()->info("JukeboxPE is loading!");
+        $this->getServer()->getScheduler()->scheduleAsyncTask($task = new UpdateCheckTask($this->getVersion()));
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         if(!is_dir($this->getPluginDir())) {
             @mkdir($this->getServer()->getDataPath()."plugins/songs");
@@ -51,6 +53,13 @@ class Main extends PluginBase implements Listener {
             $this->StartNewTask();
         }
         $this->getLogger()->notice(TextFormat::GREEN."Enabled!");
+    }
+
+    public function setVersion(int $version){
+      $cfg = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+      $cfg->set("Version", $version);
+      $cfg->save();
+      $cfg->reload();
     }
 
     public function onCommand(CommandSender $sender, Command $cmd, $label, array $args) {
@@ -214,6 +223,16 @@ class Main extends PluginBase implements Listener {
                 }
             }
         }
+    }
+
+
+    public function getVersion(){
+      $cfg = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+      return (int) $cfg->get("Version");
+    }
+
+    public function hasUpdate(){
+      return;
     }
 
     public function onDisable() {
