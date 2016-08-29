@@ -4,10 +4,12 @@ namespace JukeboxPE\Updater;
 
 use pocketmine\Server;
 use pocketmine\scheduler\AsyncTask;
-use pocketmine\Utils;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
+use pocketmine\utils\TextFormat as C;
 
-class UpdaterTask extends AsyncTask {
+use JukeboxPE\Main;
+
+class UpdateTask extends AsyncTask {
 
   private $plugin;
 
@@ -39,15 +41,15 @@ class UpdaterTask extends AsyncTask {
 
   public function onCompletion(Server $server){
     if($this->has_update == true){
-      $server->getPluginManager()->getPlugin("JukeboxPE")->getLogger()->info(C::YELLOW . "A JukeboxPE Update has been found!");
+      $server->getLogger()->info(C::YELLOW . "A JukeboxPE Update has been found!");
     }
 
     else if($this->plugin->has_update == false){
-      $server->getPluginManager()->getPlugin("JukeboxPE")->getLogger()->info(C::AQUA . "No updates found! Your using the latest version of JukeboxPE!");
+      $server->getLogger()->info(C::AQUA . "No updates found! Your using the latest version of JukeboxPE!");
 
     }else{
 
-      $server->getPluginManager()->getPlugin("JukeboxPE")->getLogger()->warning("Invalid JukeboxPE Version!");
+      $server->getLogger()->warning("Invalid JukeboxPE Version!");
     }
   }
 }

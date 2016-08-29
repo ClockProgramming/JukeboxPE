@@ -4,6 +4,7 @@ namespace JukeboxPE;
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
+
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 
@@ -40,8 +41,13 @@ class Main extends PluginBase implements Listener {
     public $name;
 
     public function onEnable() {
+        if (!file_exists($this->getDataFolder() . "config.yml")) {
+            @mkdir($this->getDataFolder());
+            file_put_contents($this->getDataFolder() . "config.yml", $this->getResource("config.yml"));
+        }
+
         $this->getLogger()->info("JukeboxPE is loading!");
-        $this->getServer()->getScheduler()->scheduleAsyncTask($task = new UpdateCheckTask($this->getVersion()));
+        $this->getServer()->getScheduler()->scheduleAsyncTask($task = new UpdateTask($this->getVersion()));
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         if(!is_dir($this->getPluginDir())) {
             @mkdir($this->getServer()->getDataPath()."plugins/songs");

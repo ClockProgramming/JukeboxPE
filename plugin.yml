@@ -1,5 +1,5 @@
-name: JukeBoxPE
-version: 0.1.0
+name: JukeboxPE
+version: 0.2.1
 api: [2.0.0]
 author: "GlitchPlayer & Others"
 description: "Jukebox from bukkit plugin"
@@ -7,9 +7,9 @@ main: JukeboxPE\Main
 
 commands:
   music:
-  permission: JukeboxPE.music
-  description: "JukeboxPE's main command"
-  usage: "/music <Next | Stop | Start>"
+   permission: JukeboxPE.music
+   description: "JukeboxPE's main command"
+   usage: "/music <Next | Stop | Start>"
 
 permissions:
   JukeboxPE.cmd:
@@ -18,4 +18,4 @@ permissions:
       JukeboxPE.cmd.music:
         default: op
   JukeboxPE.sound:
-    default:true
+    default: true
