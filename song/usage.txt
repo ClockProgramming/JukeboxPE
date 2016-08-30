@@ -1,3 +1,0 @@
-Place your NBS files in this directory
-
-It must be NBS file type
