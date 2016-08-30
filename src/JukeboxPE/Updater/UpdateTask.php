@@ -26,7 +26,7 @@ class UpdateTask extends AsyncTask {
   }
 
   public function onRun() {
-    $nversion = Utils::getURL("https://raw.githubusercontent.com/GlitchPlayer/JukeboxPE/master/current_version.txt");
+    $nversion = Utils::getURL("https://raw.githubusercontent.com/GlitchPlayer/JukeboxPE/gh-pages/current_version.txt");
     if($nversion > $this->version) {
       $this->has_update = true;
     }
