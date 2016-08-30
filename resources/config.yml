@@ -1,3 +1,6 @@
 # Plugin version: Do not edit!
 Version: 0.2.1
-auto-update: true
+# check-update: Set whether to check update from server
+check-update: true
+# update-host: Set host where to check update
+update-host: glitchplayer.github.io/JukeboxPE/api
