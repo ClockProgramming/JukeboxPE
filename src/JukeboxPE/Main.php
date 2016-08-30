@@ -17,6 +17,7 @@ use pocketmine\scheduler\PluginTask;
 
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 
 use pocketmine\network\protocol\BlockEventPacket;
 
@@ -39,13 +40,12 @@ class Main extends PluginBase implements Listener {
     public $song;
     public $SongPlayer;
     public $name;
+    
+    const PACKAGE_VERSION = "5.7";
 
     public function onEnable() {
-        if (!file_exists($this->getDataFolder() . "config.yml")) {
-            @mkdir($this->getDataFolder());
-            file_put_contents($this->getDataFolder() . "config.yml", $this->getResource("config.yml"));
-        }
-
+        $this->saveDefaultConfig();
+        $this->reloadConfig();
         $this->getLogger()->info("JukeboxPE is loading!");
         $this->getServer()->getScheduler()->scheduleAsyncTask($task = new UpdateTask($this->getVersion()));
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -60,6 +60,24 @@ class Main extends PluginBase implements Listener {
         }
         $this->getLogger()->notice(TextFormat::GREEN."Enabled!");
     }
+    
+    private function checkUpdate() {
+		try{
+			$info = json_decode(Utils::getURL($this->getConfig()->get("update-host")."?version=".$this->getDescription()->getVersion()."&package_version=".self::PACKAGE_VERSION), true);
+			if(!isset($info["status"]) or $info["status"] !== true){
+				$this->getLogger()->notice("Something went wrong on update server.");
+				return false;
+			}
+			if($info["update-available"] === true) {
+				$this->getLogger()->notice("Server says new version (".$info["new-version"].") of EconomyS is out. Check it out at ".$info["download-address"]);
+			}
+			$this->getLogger()->notice($info["notice"]);
+			return true;
+		}catch(\Throwable $e) {
+			$this->getLogger()->logException($e);
+			return false;
+		}
+	}
 
     public function setVersion(int $version){
       $cfg = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
