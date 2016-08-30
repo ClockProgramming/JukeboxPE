@@ -1,9 +1,10 @@
 <?php
-
 namespace JukeboxPE;
+
 use pocketmine\command\Command;
 use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
+
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 
@@ -32,39 +33,54 @@ use pocketmine\utils\BinaryStream;
 use pocketmine\utils\Binary;
 
 use JukeboxPE\JukeboxAPI;
+use JukeboxPE\Updater\UpdateTask;
 
 class Main extends PluginBase implements Listener {
     public $song;
     public $SongPlayer;
     public $name;
 
-    public function onEnable(){
+    public function onEnable() {
+        if (!file_exists($this->getDataFolder() . "config.yml")) {
+            @mkdir($this->getDataFolder());
+            file_put_contents($this->getDataFolder() . "config.yml", $this->getResource("config.yml"));
+        }
+
         $this->getLogger()->info("JukeboxPE is loading!");
+        $this->getServer()->getScheduler()->scheduleAsyncTask($task = new UpdateTask($this->getVersion()));
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        if(!is_dir($this->getPluginDir())){
+        if(!is_dir($this->getPluginDir())) {
             @mkdir($this->getServer()->getDataPath()."plugins/songs");
         }
         $this->getServer()->getPluginManager()->registerEvents($this,$this);
-        if(!$this->CheckMusic()){
+        if(!$this->CheckMusic()) {
             $this->getLogger()->info("§bPlease put in NBS type files!!!");
         }else{
             $this->StartNewTask();
         }
-        $this->getLogger()->info("JukeboxPE loaded!!!!! Enjoy your songs!");
+        $this->getLogger()->notice(TextFormat::GREEN."Enabled!");
+    }
+
+    public function setVersion(int $version){
+      $cfg = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+      $cfg->set("Version", $version);
+      $cfg->save();
+      $cfg->reload();
     }
 
     public function onCommand(CommandSender $sender, Command $cmd, $label, array $args) {
         switch($cmd->getName()) {
             case "music":
-                if(isset($args[0])){
-                    switch($args[0]){
+                if(isset($args[0])) {
+                    switch($args[0]) {
                         case "next":
                             $this->StartNewTask();
                             $sender->sendMessage(TextFormat::GREEN."Switched to next song");
                             return true;
                             break;
                         case "stop":
-                            if($sender->isOp()){
+                        case "pause":
+                            if($sender->hasPermission("JukeboxPE.cmd.music")) {
                                 $this->getServer()->getScheduler()->cancelTasks($this);
                                 $sender->sendMessage(TextFormat::GREEN."Song Stopped");
                             }else{
@@ -73,7 +89,8 @@ class Main extends PluginBase implements Listener {
                             return true;
                             break;
                         case "start":
-                            if($sender->isOp()){
+                        case "play":
+                            if($sender->hasPermission("JukeboxPE.cmd.music")) {
                                 $this->StartNewTask();
                                 $sender->sendMessage(TextFormat::GREEN."Song Started");
                             }else{
@@ -83,50 +100,50 @@ class Main extends PluginBase implements Listener {
                             break;
                     }
                 }else{
-                    $sender->sendMessage(TextFormat::RED."Usage:/music <start|stop|next>");
+                    return false;
                 }
                 break;
         }
         return false;
     }
 
-    public function CheckMusic(){
-        if($this->getDirCount($this->getPluginDir()) > 0 and $this->RandomFile($this->getPluginDir(),"nbs")){
+    public function CheckMusic() {
+        if($this->getDirCount($this->getPluginDir()) > 0 and $this->RandomFile($this->getPluginDir(),"nbs")) {
             return true;
         }
         return false;
     }
 
-    public function getDirCount($PATH){
+    public function getDirCount($PATH) {
         $num = sizeof(scandir($PATH));
         $num = ($num>2)?$num-2:0;
         return $num;
     }
 
-    public function getPluginDir(){
+    public function getPluginDir() {
         return $this->getServer()->getDataPath()."plugins/songs/";
     }
 
-    public function getRandomMusic(){
+    public function getRandomMusic() {
         $dir = $this->RandomFile($this->getPluginDir(),"nbs");
-        if($dir){
+        if($dir) {
             $api = new JukeBoxAPI($this,$dir);
             return $api;
         }
         return false;
     }
 
-    Public function RandomFile($folder='', $extensions='.*'){
+    Public function RandomFile($folder='', $extensions='.*') {
         $folder = trim($folder);
         $folder = ($folder == '') ? './' : $folder;
-        if (!is_dir($folder)){
+        if (!is_dir($folder)) {
             return false;
         }
         $files = array();
-        if ($dir = @opendir($folder)){
-            while($file = readdir($dir)){
+        if ($dir = @opendir($folder)) {
+            while($file = readdir($dir)) {
                 if (!preg_match('/^\.+$/', $file) and
-                    preg_match('/\.('.$extensions.')$/', $file)){
+                    preg_match('/\.('.$extensions.')$/', $file)) {
                     $files[] = $file;
                 }
             }
@@ -134,15 +151,15 @@ class Main extends PluginBase implements Listener {
         }else{
             return false;
         }
-        if (count($files) == 0){
+        if (count($files) == 0) {
             return false;
         }
         mt_srand((double)microtime()*1000000);
         $rand = mt_rand(0, count($files)-1);
-        if (!isset($files[$rand])){
+        if (!isset($files[$rand])) {
             return false;
         }
-        if(function_exists("iconv")){
+        if(function_exists("iconv")) {
             $rname = iconv('gbk','UTF-8',$files[$rand]);
         }else{
             $rname = $files[$rand];
@@ -151,7 +168,7 @@ class Main extends PluginBase implements Listener {
         return $folder . $files[$rand];
     }
 
-    public function getNearbyNoteBlock($x,$y,$z,$world){
+    public function getNearbyNoteBlock($x,$y,$z,$world) {
         $nearby = [];
         $minX = $x - 5;
         $maxX = $x + 5;
@@ -160,12 +177,12 @@ class Main extends PluginBase implements Listener {
         $minZ = $z - 2;
         $maxZ = $z + 2;
 
-        for($x = $minX; $x <= $maxX; ++$x){
-            for($y = $minY; $y <= $maxY; ++$y){
-                for($z = $minZ; $z <= $maxZ; ++$z){
+        for($x = $minX; $x <= $maxX; ++$x) {
+            for($y = $minY; $y <= $maxY; ++$y) {
+                for($z = $minZ; $z <= $maxZ; ++$z) {
                     $v3 = new Vector3($x, $y, $z);
                     $block = $world->getBlock($v3);
-                    if($block->getID() == 25){
+                    if($block->getID() == 25) {
                         $nearby[] = $block;
                     }
                 }
@@ -174,24 +191,24 @@ class Main extends PluginBase implements Listener {
         return $nearby;
     }
 
-    public function getFullBlock($x, $y, $z, $level){
+    public function getFullBlock($x, $y, $z, $level) {
         return $level->getChunk($x >> 4, $z >> 4, false)->getFullBlock($x & 0x0f, $y & 0x7f, $z & 0x0f);
     }
 
-    public function Play($sound,$type = 0,$blo = 0){
-        if(is_numeric($sound) and $sound > 0){
-            foreach($this->getServer()->getOnlinePlayers() as $p){
+    public function Play($sound,$type = 0,$blo = 0) {
+        if(is_numeric($sound) and $sound > 0) {
+            foreach($this->getServer()->getOnlinePlayers() as $p) {
                 $noteblock = $this->getNearbyNoteBlock($p->x,$p->y,$p->z,$p->getLevel());
                 $noteblock1 = $noteblock;
-                if(!empty($noteblock)){
-                    if($this->song->name != ""){
+                if(!empty($noteblock)) {
+                    if($this->song->name != "") {
                         $p->sendPopup("§b|->§6Now Playing: §a".$this->song->name."§b<-|");
                     }else{
                         $p->sendPopup("§b|->§6Now Playing: §a".$this->name."§b<-|");
                     }
                     $i = 0;
-                    while ($i < $blo){
-                        if(current($noteblock)){
+                    while ($i < $blo) {
+                        if(current($noteblock)) {
                             next($noteblock);
                             $i ++;
                         }else{
@@ -200,7 +217,7 @@ class Main extends PluginBase implements Listener {
                         }
                     }
                     $block = current($noteblock);
-                    if($block){
+                    if($block) {
                         $pk = new BlockEventPacket();
                         $pk->x = $block->x;
                         $pk->y = $block->y;
@@ -214,11 +231,21 @@ class Main extends PluginBase implements Listener {
         }
     }
 
-    public function onDisable(){
-        $this->getLogger()->info("JukeboxPE Unloaded!");
+
+    public function getVersion(){
+      $cfg = new Config($this->getDataFolder() . "/config.yml", Config::YAML);
+      return (int) $cfg->get("Version");
     }
 
-    public function StartNewTask(){
+    public function hasUpdate(){
+      return;
+    }
+
+    public function onDisable() {
+        $this->getLogger()->notice(TextFormat::GREEN."Disabled!");
+    }
+
+    public function StartNewTask() {
         $this->song = $this->getRandomMusic();
         $this->getServer()->getScheduler()->cancelTasks($this);
         $this->SongPlayer = new SongPlayer($this);
