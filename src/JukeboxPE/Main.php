@@ -20,6 +20,7 @@ use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils;
 
 use pocketmine\network\protocol\BlockEventPacket;
+use pocketmine\network\protocol\LevelSoundEventPacket;
 
 use pocketmine\Player;
 
@@ -235,15 +236,25 @@ class Main extends PluginBase implements Listener {
                         }
                     }
                     $block = current($noteblock);
-                    if($block) {
-                        $pk = new BlockEventPacket();
-                        $pk->x = $block->x;
-                        $pk->y = $block->y;
-                        $pk->z = $block->z;
-                        $pk->case1 = $type;
-                        $pk->case2 = $sound;
-                        $p->dataPacket($pk);
-                    }
+					if($block){
+						$pk = new BlockEventPacket();
+						$pk->x = $block->x;
+						$pk->y = $block->y;
+						$pk->z = $block->z;
+						$pk->case1 = $type;
+						$pk->case2 = $sound;
+						$p->dataPacket($pk);
+						$pk = new LevelSoundEventPacket();
+						$pk->sound = 64;
+						$pk->x = $block->x;
+						$pk->y = $block->y;
+						$pk->z = $block->z;
+						$pk->volume = $type;
+						$pk->pitch = $sound;
+						$pk->unknownBool = true;
+						$pk->unknownBool2 = true;
+						$p->dataPacket($pk);
+					}
                 }
             }
         }
